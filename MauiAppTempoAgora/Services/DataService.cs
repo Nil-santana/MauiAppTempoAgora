@@ -20,7 +20,16 @@ namespace MauiAppTempoAgora.Services
             using (HttpClient client = new HttpClient())
             {
                 HttpResponseMessage resp = await client.GetAsync(url);
+                // Verifica o StatusCode para tratar erros específicos
+                if (resp.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return null; // Cidade não encontrada → retorna null
+                }
 
+                if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    throw new Exception("Chave de API inválida ou não autorizada.");
+                }
                 if (resp.IsSuccessStatusCode)
                 {
                     string json = await resp.Content.ReadAsStringAsync();
@@ -41,8 +50,8 @@ namespace MauiAppTempoAgora.Services
                         temp_max = (double)rascunho["main"]["temp_max"],
                         speed = (double)rascunho["wind"]["speed"],
                         visibility = (int)rascunho["visibility"],
-                        sunrise = sunrise.ToString(),
-                        sunset = sunset.ToString(),
+                        sunrise = sunrise.ToString("HH:mm:ss"),
+                        sunset = sunset.ToString("HH:mm:ss"),
                     };// Fecha objeto do tempo.
                 }// Fecha if de resposta do servidor.
             } // Fecha using do HttpClient.
